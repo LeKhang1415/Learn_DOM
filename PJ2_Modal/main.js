@@ -1,5 +1,15 @@
 function Model() {
-    this.openModal = (content) => {
+    this.openModal = (options = {}) => {
+        const { templateId } = options;
+        const template = document.querySelector(templateId);
+
+        if (!template) {
+            console.error("Template not found:", templateId);
+            return;
+        }
+
+        const content = template.content.cloneNode(true);
+
         // Create  modal elements
         const backdrop = document.createElement("div");
         backdrop.className = "modal-backdrop";
@@ -15,7 +25,7 @@ function Model() {
         modalContent.className = "modal-content";
 
         // Append content to modal
-        modalContent.innerHTML = content;
+        modalContent.append(content);
 
         // Append elements to the container
         container.append(closeBtn, modalContent);
@@ -60,13 +70,11 @@ function Model() {
 
 // Usage example
 const model = new Model();
-const btn1 = document.querySelector("#modal-1");
+const btn1 = document.querySelector("#modal-btn-1");
 
 console.log(btn1);
 btn1.onclick = () => {
-    model.openModal(`
-        <h2>Modal Title</h2>
-        <p>This is the content of the modal.</p>
-        <p>You can add any HTML content here.</p>
-    `);
+    model.openModal({
+        templateId: "#modal-1",
+    });
 };
