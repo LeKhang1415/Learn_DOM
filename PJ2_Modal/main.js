@@ -1,8 +1,23 @@
 function Modal() {
+    function getScrollBarWidth() {
+        // Create a temporary element to measure scrollbar width
+        const scrollDiv = document.createElement("div");
+        scrollDiv.style.overflow = "scroll";
+        scrollDiv.style.width = "100px";
+        scrollDiv.style.height = "100px";
+        document.body.appendChild(scrollDiv);
+
+        const scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+        document.body.removeChild(scrollDiv);
+
+        return scrollbarWidth;
+    }
+
+    const scrollBarWidth = getScrollBarWidth();
+
     this.openModal = (options = {}) => {
         const { templateId, allowBackdropClose = true } = options;
         const template = document.querySelector(templateId);
-        const scrollBarWidth = getScrollBarWidth();
 
         if (!template) {
             console.error("Template not found:", templateId);
@@ -77,20 +92,6 @@ function Modal() {
             document.body.style.paddingRight = "";
         }
     };
-}
-
-function getScrollBarWidth() {
-    // Create a temporary element to measure scrollbar width
-    const scrollDiv = document.createElement("div");
-    scrollDiv.style.overflow = "scroll";
-    scrollDiv.style.width = "100px";
-    scrollDiv.style.height = "100px";
-    document.body.appendChild(scrollDiv);
-
-    const scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
-    document.body.removeChild(scrollDiv);
-
-    return scrollbarWidth;
 }
 
 // Usage example
