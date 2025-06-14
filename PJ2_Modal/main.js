@@ -1,6 +1,6 @@
-function Model() {
+function Modal() {
     this.openModal = (options = {}) => {
-        const { templateId } = options;
+        const { templateId, allowBackdropClose = true } = options;
         const template = document.querySelector(templateId);
 
         if (!template) {
@@ -42,12 +42,14 @@ function Model() {
             backdrop.classList.add("show");
         }, 10);
 
-        backdrop.onclick = (event) => {
-            // Close modal if clicked outside the content area
-            if (event.target === backdrop) {
-                this.closeModal(backdrop);
-            }
-        };
+        if (allowBackdropClose) {
+            backdrop.onclick = (event) => {
+                // Close modal if clicked outside the content area
+                if (event.target === backdrop) {
+                    this.closeModal(backdrop);
+                }
+            };
+        }
 
         document.addEventListener("keydown", (event) => {
             // Close modal on Escape key press
@@ -55,6 +57,11 @@ function Model() {
                 this.closeModal(backdrop);
             }
         });
+
+        // Disable scrolling on the body when modal is open
+        document.body.classList.add("no-scroll");
+
+        return backdrop;
     };
 
     this.closeModal = (backdrop) => {
@@ -64,17 +71,40 @@ function Model() {
             backdrop.ontransitionend = () => {
                 backdrop.remove();
             };
+            document.body.classList.remove("no-scroll");
         }
     };
 }
 
 // Usage example
-const model = new Model();
+const modal = new Modal();
 const btn1 = document.querySelector("#modal-btn-1");
+const btn2 = document.querySelector("#modal-btn-2");
 
-console.log(btn1);
 btn1.onclick = () => {
-    model.openModal({
+    modal.openModal({
         templateId: "#modal-1",
     });
 };
+
+btn2.onclick = () => {
+    const modalElement = modal.openModal({
+        templateId: "#modal-2",
+        allowBackdropClose: false,
+    });
+
+    const form = modalElement.querySelector("#login-form");
+    if (form) {
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            const formData = {
+                email: $("#email").value.trim(),
+                password: $("#password").value.trim(),
+            };
+
+            console.log(formData);
+        };
+    }
+};
+
+console.log(btn2);
