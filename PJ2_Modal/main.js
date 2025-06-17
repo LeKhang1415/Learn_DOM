@@ -4,8 +4,11 @@ function Modal(options = {}) {
         closeMethods = ["button", "overlay", "escape"],
         destroyOnClose = true,
         cssClass = [],
+        footer = false,
+        onOpen = () => {},
+        onClose = () => {},
     } = options;
-    const template = document.querySelector(templateId);
+    const template = document.querySelector(`#${templateId}`);
 
     if (!template) {
         console.error("Template not found:", templateId);
@@ -47,6 +50,7 @@ function Modal(options = {}) {
             if (cls && typeof cls === "string") {
                 container.classList.add(cls);
             }
+        });
         if (this._allowButtonClose) {
             const closeBtn = document.createElement("button");
             closeBtn.className = "modal-close";
@@ -54,6 +58,15 @@ function Modal(options = {}) {
             container.append(closeBtn);
 
             closeBtn.onclick = () => this.close();
+        }
+
+        if (footer) {
+            this._modalFooter = document.createElement("div");
+            this._modalFooter.className = "modal-footer";
+            if (typeof this._footerContent === "string") {
+                this._modalFooter.innerHTML = this._footerContent;
+            }
+            container.append(this._modalFooter);
         }
 
         const modalContent = document.createElement("div");
@@ -100,31 +113,63 @@ function Modal(options = {}) {
         document.body.classList.add("no-scroll");
         document.body.style.paddingRight = `${scrollBarWidth}px`;
 
+        this._onTransitionEnd(() => {
+            if (typeof onOpen === "function") {
+                onOpen();
+            }
+        });
         return this._backdrop;
+    };
+
+    this._onTransitionEnd = (callback) => {
+        if (typeof callback === "function") {
+            callback();
+        }
     };
 
     this.close = (destroy = destroyOnClose) => {
         this._backdrop.classList.remove("show");
-        // Wait for the transition to end before removing the backdrop
-        this._backdrop.ontransitionend = () => {
-            if (destroy) {
-                this._backdrop.remove();
-                this._backdrop = null;
-            }
 
-            document.body.classList.remove("no-scroll");
-            document.body.style.paddingRight = "";
-        };
+        this._onTransitionEnd(() => {
+            // Wait for the transition to end before removing the backdrop
+            this._backdrop.ontransitionend = (e) => {
+                if (e.propertyName !== "transform") return;
+
+                if (destroy) {
+                    this._backdrop.remove();
+                    this._backdrop = null;
+                    this._modalFooter = null;
+                }
+
+                document.body.classList.remove("no-scroll");
+                document.body.style.paddingRight = "";
+            };
+
+            if (typeof onClose === "function") {
+                onClose();
+            }
+        });
     };
 
     this.destroy = () => {
         this.close(true);
     };
-}
 
+    this.setFooterContent = (content) => {
+        this._footerContent = content;
+        if (this._modalFooter) {
+            if (typeof content === "string") {
+                this._modalFooter.innerHTML = content;
+            }
+        }
+    };
+}
 // Usage example
 const modal1 = new Modal({
-    templateId: "#modal-1",
+    templateId: "modal-1",
+});
+const modal2 = new Modal({
+    templateId: "modal-2",
 });
 const btn1 = document.querySelector("#modal-btn-1");
 const btn2 = document.querySelector("#modal-btn-2");
@@ -134,11 +179,7 @@ btn1.onclick = () => {
 };
 
 btn2.onclick = () => {
-    const modalElement = modal.openModal({
-        templateId: "#modal-2",
-        allowBackdropClose: false,
-    });
-
+    modal2.open();
     const form = modalElement.querySelector("#login-form");
     if (form) {
         form.onsubmit = (e) => {
@@ -152,5 +193,3 @@ btn2.onclick = () => {
         };
     }
 };
-
-console.log(btn2);
