@@ -104,8 +104,28 @@ article img {
 }
 
 .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
     padding: 20px 0;
-    border-top: 1px solid #ccc;
+}
+
+.modal-btn {
+    padding: 8px 20px;
+    color: #fff;
+    background: #34495e;
+}
+
+.modal-btn.primary {
+    background: #3498db;
+}
+
+.modal-btn.danger {
+    background: #e74c3c;
+}
+
+.modal-btn.pull-left {
+    margin-right: auto;
 }
 
 .no-scroll {
