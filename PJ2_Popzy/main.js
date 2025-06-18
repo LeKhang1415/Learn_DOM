@@ -1,9 +1,27 @@
-const $ = document.querySelector.bind(document);
-const $$ = document.querySelectorAll.bind(document);
-
 Popzy.elements = [];
 
 function Popzy(options = {}) {
+    if (!options.content && !options.templateId) {
+        console.error("You must provide one of 'content' or 'templateId'.");
+        return;
+    }
+
+    if (options.content && options.templateId) {
+        options.templateId = null;
+        console.warn(
+            "Both 'content' and 'templateId' are specified. 'content' will take precedence, and 'templateId' will be ignored."
+        );
+    }
+
+    if (options.templateId) {
+        this.template = document.querySelector(`#${options.templateId}`);
+
+        if (!this.template) {
+            console.error(`#${options.templateId} does not exist!`);
+            return;
+        }
+    }
+
     this.opt = Object.assign(
         {
             destroyOnClose: true,
@@ -13,13 +31,8 @@ function Popzy(options = {}) {
         },
         options
     );
-    this.template = $(`#${this.opt.templateId}`);
 
-    if (!this.template) {
-        console.error(`#${this.opt.templateId} does not exist!`);
-        return;
-    }
-
+    this.content = this.opt.content;
     const { closeMethods } = this.opt;
     this._allowButtonClose = closeMethods.includes("button");
     this._allowBackdropClose = closeMethods.includes("overlay");
@@ -31,7 +44,13 @@ function Popzy(options = {}) {
 }
 
 Popzy.prototype._build = function () {
-    const content = this.template.content.cloneNode(true);
+    const contentNode = this.content
+        ? document.createElement("div")
+        : this.template.content.cloneNode(true);
+
+    if (this.content) {
+        contentNode.innerHTML = this.content;
+    }
 
     // Create modal elements
     this._backdrop = document.createElement("div");
@@ -53,12 +72,12 @@ Popzy.prototype._build = function () {
         container.append(closeBtn);
     }
 
-    const modalContent = document.createElement("div");
-    modalContent.className = "popzy__content";
+    this._modalContent = document.createElement("div");
+    this._modalContent.className = "popzy__content";
 
     // Append content and elements
-    modalContent.append(content);
-    container.append(modalContent);
+    this._modalContent.append(contentNode);
+    container.append(this._modalContent);
 
     if (this.opt.footer) {
         this._modalFooter = document.createElement("div");
@@ -72,6 +91,13 @@ Popzy.prototype._build = function () {
 
     this._backdrop.append(container);
     document.body.append(this._backdrop);
+};
+
+Popzy.prototype.setContent = function (content) {
+    this.content = content;
+    if (this._modalContent) {
+        this._modalContent.innerHTML = this.content;
+    }
 };
 
 Popzy.prototype.setFooterContent = function (html) {
@@ -201,7 +227,6 @@ Popzy.prototype._getScrollbarWidth = function () {
 
     return this._scrollbarWidth;
 };
-
 const modal1 = new Popzy({
     templateId: "modal-1",
     destroyOnClose: false,
@@ -213,7 +238,7 @@ const modal1 = new Popzy({
     },
 });
 
-$("#open-modal-1").onclick = () => {
+document.querySelector("#open-modal-1").onclick = () => {
     modal1.open();
 };
 
@@ -229,7 +254,7 @@ const modal2 = new Popzy({
     },
 });
 
-$("#open-modal-2").onclick = () => {
+document.querySelector("#open-modal-2").onclick = () => {
     const modalElement = modal2.open();
 
     const form = modalElement.querySelector("#login-form");
@@ -281,6 +306,6 @@ modal3.addFooterButton(
     }
 );
 
-$("#open-modal-3").onclick = () => {
+document.querySelector("#open-modal-3").onclick = () => {
     modal3.open();
 };
