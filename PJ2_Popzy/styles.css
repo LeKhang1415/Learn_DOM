@@ -75,10 +75,10 @@ article img {
 .popzy__container {
     position: relative;
     width: min(600px, 90%);
-    padding: 20px 20px 0;
+    padding: 20px;
     border-radius: 6px;
     background: #fff;
-    transform: scale(0);
+    transform: scale(0.5);
     transition: transform 0.3s;
 }
 
@@ -92,8 +92,9 @@ article img {
     color: #666;
     background: #ebebeb;
     font-size: 2rem;
+    border: none;
+    outline: none;
 }
-
 .popzy__close:hover {
     color: #333;
 }
@@ -107,7 +108,7 @@ article img {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    padding: 20px 0;
+    padding-top: 20px;
 }
 
 .popzy__btn {

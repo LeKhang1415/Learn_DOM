@@ -24,10 +24,12 @@ function Popzy(options = {}) {
 
     this.opt = Object.assign(
         {
+            enableScrollLock: true,
             destroyOnClose: true,
             footer: false,
             cssClass: [],
             closeMethods: ["button", "overlay", "escape"],
+            scrollLockTarget: () => document.body,
         },
         options
     );
@@ -145,9 +147,18 @@ Popzy.prototype.open = function () {
         this._backdrop.classList.add("popzy--show");
     }, 0);
 
-    // Disable scrolling
-    document.body.classList.add("popzy--no-scroll");
-    document.body.style.paddingRight = this._getScrollbarWidth() + "px";
+    if (this.opt.enableScrollLock) {
+        const scrollLockTarget = this.opt.scrollLockTarget();
+        if (this._hasScrollbar(scrollLockTarget)) {
+            // Disable scrolling
+            scrollLockTarget.classList.add("popzy--no-scroll");
+            const targetPaddingRight = parseInt(
+                getComputedStyle(scrollLockTarget).paddingRight
+            );
+            scrollLockTarget.style.paddingRight =
+                targetPaddingRight + this._getScrollbarWidth() + "px";
+        }
+    }
 
     // Attach event listeners
     if (this._allowBackdropClose) {
@@ -174,6 +185,10 @@ Popzy.prototype._handleEscapeKey = function (e) {
     }
 };
 
+Popzy.prototype._hasScrollbar = function (target) {
+    return target.scrollHeight > target.clientHeight;
+};
+
 Popzy.prototype._onTransitionEnd = function (callback) {
     this._backdrop.ontransitionend = (e) => {
         if (e.propertyName !== "transform") return;
@@ -198,9 +213,10 @@ Popzy.prototype.close = function (destroy = this.opt.destroyOnClose) {
         }
 
         // Enable scrolling
-        if (!Popzy.elements.length) {
-            document.body.classList.remove("popzy--no-scroll");
-            document.body.style.paddingRight = "";
+        if (!Popzy.elements.length && this.opt.enableScrollLock) {
+            const scrollLockTarget = this.opt.scrollLockTarget();
+            scrollLockTarget.classList.remove("popzy--no-scroll");
+            scrollLockTarget.style.paddingRight = "";
         }
 
         if (typeof this.opt.onClose === "function") this.opt.onClose();
