@@ -186,6 +186,14 @@ Popzy.prototype._handleEscapeKey = function (e) {
 };
 
 Popzy.prototype._hasScrollbar = function (target) {
+    if ([document.documentElement, document.body].includes(target)) {
+        return (
+            document.documentElement.scrollHeight >
+                document.documentElement.clientHeight ||
+            document.body.scrollHeight > document.body.clientHeight
+        );
+    }
+
     return target.scrollHeight > target.clientHeight;
 };
 
