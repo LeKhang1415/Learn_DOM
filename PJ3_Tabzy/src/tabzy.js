@@ -33,7 +33,17 @@ function Tabzy(selector, options = {}) {
 }
 
 Tabzy.prototype._init = function () {
-    this._activeTab(this.tabs[0]);
+    let activeTab = null;
+    if (location.hash) {
+        activeTab = this.tabs.find((tab) => {
+            return tab.getAttribute("href") === location.hash;
+        });
+    }
+    if (activeTab) {
+        this._activeTab(activeTab);
+    } else {
+        this._activeTab(this.tabs[0]);
+    }
 
     this.tabs.forEach((tab) => {
         tab.onclick = (event) => {
@@ -58,6 +68,8 @@ Tabzy.prototype._activeTab = function (tab) {
         panel.hidden = true;
     });
     panel.hidden = false;
+
+    history.pushState(null, null, tab.getAttribute("href"));
 };
 
 Tabzy.prototype.switch = function (input) {
