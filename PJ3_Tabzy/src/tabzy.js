@@ -27,48 +27,66 @@ function Tabzy(selector, options = {}) {
         return;
     }
 
+    this._originalHTML = this.container.innerHTML;
+
     this._init();
 }
 
 Tabzy.prototype._init = function () {
-    const tabActive = this.tabs[0];
-    tabActive.closest("li").classList.add("tabzy--active");
-
-    this.panels.forEach((panel) => {
-        panel.hidden = true;
-    });
+    this._activeTab(this.tabs[0]);
 
     this.tabs.forEach((tab) => {
         tab.onclick = (event) => {
             this._handleTabClick(event, tab);
         };
     });
-
-    const panelActive = this.panels[0];
-    panelActive.hidden = false;
 };
 
 Tabzy.prototype._handleTabClick = function (event, tab) {
     event.preventDefault();
-    console.log(event, tab);
+    this._activeTab(tab);
+};
 
+Tabzy.prototype._activeTab = function (tab) {
     this.tabs.forEach((tab) => {
         tab.closest("li").classList.remove("tabzy--active");
     });
     tab.closest("li").classList.add("tabzy--active");
 
+    const panel = document.querySelector(tab.getAttribute("href"));
     this.panels.forEach((panel) => {
         panel.hidden = true;
     });
-    const panelId = tab.getAttribute("href");
-    const panel = document.querySelector(panelId);
     panel.hidden = false;
 };
 
-Tabzy.prototype.switch = function (selector) {
-    // tab element or panel element
-    const tab = this.container.querySelector(selector);
-    if (!tab) {
-        throw new Error(`Tabzy: Element with selector ${selector} not found`);
+Tabzy.prototype.switch = function (input) {
+    const tabToActive = null;
+
+    if (typeof input === "string") {
+        const tabToActive = this.tabs.find((tab) => {
+            return tab.getAttribute("href") === input;
+        });
+        if (!tabToActive) {
+            throw new Error(`Tabzy: Tab with href ${input} not found`);
+        }
+    } else if (this.tabs.includes(input)) {
+        tabToActive = input;
     }
+
+    if (!tabToActive) {
+        throw new Error("Tabzy: Invalid input for switch method");
+    }
+
+    this._activeTab(tabToActive);
+};
+
+Tabzy.prototype.destroy = function () {
+    this.container.innerHTML = this._originalHTML;
+    this.panels.forEach((panel) => {
+        panel.hidden = false;
+    });
+    this.container = null;
+    this.tabs = null;
+    this.panels = null;
 };
