@@ -56,9 +56,9 @@ Tabzy.prototype._init = function () {
     }
     this._currentActiveTab = activeTab;
     if (activeTab) {
-        this._activeTab(activeTab, false);
+        this._activeTab(activeTab, false, false);
     } else {
-        this._activeTab(this.tabs[0], false);
+        this._activeTab(this.tabs[0], false, false);
     }
 
     this.tabs.forEach((tab) => {
@@ -76,7 +76,11 @@ Tabzy.prototype._handleTabClick = function (event, tab) {
     }
 };
 
-Tabzy.prototype._activeTab = function (tab, triggerOnChange = true) {
+Tabzy.prototype._activeTab = function (
+    tab,
+    triggerOnChange = true,
+    updateURL = this.opt.remember
+) {
     this.tabs.forEach((tab) => {
         tab.closest("li").classList.remove("tabzy--active");
     });
@@ -88,7 +92,7 @@ Tabzy.prototype._activeTab = function (tab, triggerOnChange = true) {
     });
     panel.hidden = false;
 
-    if (this.opt.remember) {
+    if (updateURL) {
         const params = new URLSearchParams(location.search);
         const tabId = tab.getAttribute("href").replace(/[^a-zA-Z0-9]/g, "");
         const selectorKey = this.selector;
