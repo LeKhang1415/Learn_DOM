@@ -64,10 +64,16 @@ Slidezy.prototype._createNavigation = function () {
 };
 
 Slidezy.prototype._moveSlice = function (step) {
-    this._currentIndex = Math.min(
-        Math.max(this._currentIndex + step, 0),
-        this._slides.length - this.opt.items
-    );
+    if (this.opt.loop) {
+        this._currentIndex =
+            (this._currentIndex + step + this._slides.length) %
+            this._slides.length;
+    } else {
+        this._currentIndex = Math.min(
+            Math.max(this._currentIndex + step, 0),
+            this._slides.length - this.opt.items
+        );
+    }
 
     this.offset = -(this._currentIndex * (100 / this.opt.items));
     this.track.style.transform = `translateX(${this.offset}%)`;
