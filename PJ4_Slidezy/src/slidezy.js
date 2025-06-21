@@ -8,8 +8,15 @@ function Slidezy(selector, options = {}) {
         throw new Error(`Element not found for selector: ${selector}`);
     }
 
-    this.opt = Object.assign({}, options);
+    this.opt = Object.assign(
+        {
+            items: 1,
+            loop: false,
+        },
+        options
+    );
     this._slides = Array.from(this.container.children);
+    this._currentIndex = 0;
 
     this._originalHTML = this.container.innerHTML;
 
@@ -29,6 +36,7 @@ Slidezy.prototype._createTrack = function () {
 
     this._slides.forEach((slide) => {
         slide.classList.add("slidezy-slide");
+        slide.style.flexBasis = `${100 / this.opt.items}%`;
         this.track.appendChild(slide);
     });
 
@@ -55,4 +63,12 @@ Slidezy.prototype._createNavigation = function () {
     };
 };
 
-Slidezy.prototype._moveSlice = function (direction) {};
+Slidezy.prototype._moveSlice = function (step) {
+    this._currentIndex = Math.min(
+        Math.max(this._currentIndex + step, 0),
+        this._slides.length - this.opt.items
+    );
+
+    this.offset = -(this._currentIndex * (100 / this.opt.items));
+    this.track.style.transform = `translateX(${this.offset}%)`;
+};
