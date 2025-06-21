@@ -16,11 +16,12 @@ function Slidezy(selector, options = {}) {
         options
     );
     this._slides = Array.from(this.container.children);
-    this._currentIndex = 0;
+    this._currentIndex = this.opt.loop ? this.opt.items : 0;
 
     this._originalHTML = this.container.innerHTML;
 
     this._init();
+    this._updatePosition();
 }
 
 Slidezy.prototype._init = function () {
@@ -33,6 +34,15 @@ Slidezy.prototype._init = function () {
 Slidezy.prototype._createTrack = function () {
     this.track = document.createElement("div");
     this.track.classList.add("slidezy-track");
+
+    const cloneHead = this._slides
+        .slice(-this.opt.items)
+        .map((node) => node.cloneNode(true));
+    const cloneTail = this._slides
+        .slice(0, this.opt.items)
+        .map((node) => node.cloneNode(true));
+
+    this._slides = cloneHead.concat(this._slides.concat(cloneTail));
 
     this._slides.forEach((slide) => {
         slide.classList.add("slidezy-slide");
@@ -64,17 +74,36 @@ Slidezy.prototype._createNavigation = function () {
 };
 
 Slidezy.prototype._moveSlice = function (step) {
+    if (this._isAnimating) return;
+    this._isAnimating = true;
     if (this.opt.loop) {
         this._currentIndex =
             (this._currentIndex + step + this._slides.length) %
             this._slides.length;
+        this.track.ontransitionend = () => {
+            const maxIndex = this._slides.length - this.opt.items;
+            if (this._currentIndex <= 0) {
+                this._currentIndex = maxIndex - this.opt.items;
+            } else if (this._currentIndex >= maxIndex) {
+                this._currentIndex = this.opt.items;
+            }
+
+            this._updatePosition(true);
+            this._isAnimating = false;
+        };
     } else {
         this._currentIndex = Math.min(
             Math.max(this._currentIndex + step, 0),
             this._slides.length - this.opt.items
         );
     }
+    this._updatePosition();
+};
 
+Slidezy.prototype._updatePosition = function (instant = false) {
+    this.track.style.transition = instant
+        ? "none"
+        : "transform 0.3s ease-in-out";
     this.offset = -(this._currentIndex * (100 / this.opt.items));
     this.track.style.transform = `translateX(${this.offset}%)`;
 };
