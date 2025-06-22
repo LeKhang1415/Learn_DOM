@@ -18,7 +18,9 @@ function Slidezy(selector, options = {}) {
             controlsText: ["<", ">"],
             prevButton: null,
             nextButton: null,
-            slideBy: 1, // Can be a number or "page"
+            slideBy: 1,
+            autoplay: false,
+            autoplaySpeed: 3000,
         },
         options
     );
@@ -75,53 +77,34 @@ Slidezy.prototype._createTrack = function () {
 };
 
 Slidezy.prototype._createControls = function () {
-    this._createPrevButton();
-    this._createNextButton();
-};
+    this.prevBtn = this.opt.prevButton
+        ? document.querySelector(this.opt.prevButton)
+        : document.createElement("button");
+    this.nextBtn = this.opt.nextButton
+        ? document.querySelector(this.opt.nextButton)
+        : document.createElement("button");
 
-Slidezy.prototype._createPrevButton = function () {
-    const stepSlideBy =
-        this.opt.slideBy === "page" ? this.opt.items : this.opt.slideBy;
-    if (this.opt.prevButton) {
-        this.btnPrev = document.querySelector(this.opt.prevButton);
-        if (!this.btnPrev) {
-            throw new Error(`Prev button not found: ${this.opt.prevButton}`);
-        }
-        this.btnPrev.onclick = () => {
-            this._moveSlice(-stepSlideBy);
-        };
-        return;
+    if (!this.opt.prevButton) {
+        this.prevBtn.textContent = this.opt.controlsText[0];
+        this.prevBtn.className = "slidezy-prev";
+        this.content.appendChild(this.prevBtn);
     }
-    this.btnPrev = document.createElement("button");
-    this.btnPrev.textContent = this.opt.controlsText[0];
-    this.btnPrev.classList.add("slidezy-prev");
-    this.content.appendChild(this.btnPrev);
-    this.btnPrev.onclick = () => {
-        this._moveSlice(-stepSlideBy);
-    };
-};
 
-Slidezy.prototype._createNextButton = function () {
-    const stepSlideBy =
+    if (!this.opt.nextButton) {
+        this.nextBtn.textContent = this.opt.controlsText[1];
+        this.nextBtn.className = "slidezy-next";
+        this.content.appendChild(this.nextBtn);
+    }
+
+    const stepSize =
         this.opt.slideBy === "page" ? this.opt.items : this.opt.slideBy;
 
-    if (this.opt.nextButton) {
-        this.btnNext = document.querySelector(this.opt.nextButton);
-        if (!this.btnNext) {
-            throw new Error(`Next button not found: ${this.opt.nextButton}`);
-        }
-        this.btnNext.onclick = () => {
-            this._moveSlice(stepSlideBy);
-        };
-        return;
-    }
-    this.btnNext = document.createElement("button");
-    this.btnNext.textContent = this.opt.controlsText[1];
-    this.btnNext.classList.add("slidezy-next");
-    this.content.appendChild(this.btnNext);
-    this.btnNext.onclick = () => {
-        this._moveSlice(stepSlideBy);
-    };
+    this.prevBtn.onclick = () => this._moveSlide(-stepSize);
+    this.nextBtn.onclick = () => this._moveSlide(stepSize);
+};
+
+Slidezy.prototype._getSlideCount = function () {
+    return this._slides.length - (this.opt.loop ? this.opt.items * 2 : 0);
 };
 
 Slidezy.prototype._createNavigation = function () {
@@ -129,8 +112,7 @@ Slidezy.prototype._createNavigation = function () {
         this.navWrapper = document.createElement("div");
         this.navWrapper.classList.add("slidezy-nav");
 
-        const slideCount =
-            this._slides.length - (this.opt.loop ? this.opt.items * 2 : 0);
+        const slideCount = this._getSlideCount();
 
         const pageCount = Math.ceil(slideCount / this.opt.items);
 
@@ -157,7 +139,7 @@ Slidezy.prototype._createNavigation = function () {
     }
 };
 
-Slidezy.prototype._moveSlice = function (step) {
+Slidezy.prototype._moveSlide = function (step) {
     if (this._isAnimating) return;
     this._isAnimating = true;
 
@@ -170,11 +152,13 @@ Slidezy.prototype._moveSlice = function (step) {
 
     setTimeout(() => {
         if (this.opt.loop) {
-            if (this._currentIndex <= 0) {
-                this._currentIndex = maxIndex - this.opt.items;
+            const slideCount = this._getSlideCount();
+
+            if (this._currentIndex < this.opt.items) {
+                this._currentIndex += slideCount;
                 this._updatePosition(true);
-            } else if (this._currentIndex >= maxIndex) {
-                this._currentIndex = this.opt.items;
+            } else if (this._currentIndex > slideCount) {
+                this._currentIndex -= slideCount;
                 this._updatePosition(true);
             }
         }
