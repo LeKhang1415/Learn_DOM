@@ -29,18 +29,10 @@
 
 .slidezy-prev {
     left: 10px;
-    z-index: 1;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    transition: background 0.3s ease;
 }
 
 .slidezy-next {
     right: 10px;
-    z-index: 1;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    transition: background 0.3s ease;
 }
 
 .slidezy-nav {
@@ -59,6 +51,6 @@
     background: #ccc;
 }
 
-.slidezy-dot.slidezy-active {
+.slidezy-dot.active {
     background: #333;
 }
