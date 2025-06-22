@@ -14,6 +14,11 @@ function Slidezy(selector, options = {}) {
             loop: false,
             speed: 300,
             nav: true,
+            controls: true,
+            controlsText: ["<", ">"],
+            prevButton: null,
+            nextButton: null,
+            slideBy: 1, // Can be a number or "page"
         },
         options
     );
@@ -31,7 +36,10 @@ Slidezy.prototype._init = function () {
 
     this._createContent();
     this._createTrack();
-    this._createControls();
+
+    if (this.opt.controls) {
+        this._createControls();
+    }
 
     if (this.opt.nav) {
         this._createNavigation();
@@ -67,22 +75,52 @@ Slidezy.prototype._createTrack = function () {
 };
 
 Slidezy.prototype._createControls = function () {
+    this._createPrevButton();
+    this._createNextButton();
+};
+
+Slidezy.prototype._createPrevButton = function () {
+    const stepSlideBy =
+        this.opt.slideBy === "page" ? this.opt.items : this.opt.slideBy;
+    if (this.opt.prevButton) {
+        this.btnPrev = document.querySelector(this.opt.prevButton);
+        if (!this.btnPrev) {
+            throw new Error(`Prev button not found: ${this.opt.prevButton}`);
+        }
+        this.btnPrev.onclick = () => {
+            this._moveSlice(-stepSlideBy);
+        };
+        return;
+    }
     this.btnPrev = document.createElement("button");
-    this.btnNext = document.createElement("button");
-
-    this.btnPrev.textContent = "<";
-    this.btnNext.textContent = ">";
-
-    this.btnNext.classList.add("slidezy-next");
+    this.btnPrev.textContent = this.opt.controlsText[0];
     this.btnPrev.classList.add("slidezy-prev");
-
-    this.content.append(this.btnPrev, this.btnNext);
-
-    this.btnNext.onclick = () => {
-        this._moveSlice(1);
-    };
+    this.content.appendChild(this.btnPrev);
     this.btnPrev.onclick = () => {
-        this._moveSlice(-1);
+        this._moveSlice(-stepSlideBy);
+    };
+};
+
+Slidezy.prototype._createNextButton = function () {
+    const stepSlideBy =
+        this.opt.slideBy === "page" ? this.opt.items : this.opt.slideBy;
+
+    if (this.opt.nextButton) {
+        this.btnNext = document.querySelector(this.opt.nextButton);
+        if (!this.btnNext) {
+            throw new Error(`Next button not found: ${this.opt.nextButton}`);
+        }
+        this.btnNext.onclick = () => {
+            this._moveSlice(stepSlideBy);
+        };
+        return;
+    }
+    this.btnNext = document.createElement("button");
+    this.btnNext.textContent = this.opt.controlsText[1];
+    this.btnNext.classList.add("slidezy-next");
+    this.content.appendChild(this.btnNext);
+    this.btnNext.onclick = () => {
+        this._moveSlice(stepSlideBy);
     };
 };
 
